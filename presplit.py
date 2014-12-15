@@ -28,5 +28,6 @@ def splitchunks(n, numnodes, numchunks):
 		current_node  = nodepool.next()
 		yield 'db.adminCommand( {{ split: "{}.{}", middle: {{ {} : {} }} }} )'.format(db, collection, shard_key, str(chunkid))
 
-for command in splitchunks(rangeid, nodes, 20000):
+# splitchunks() returns an iterable list of commands, so we need to print them
+for command in splitchunks(rangeid, nodes, splits):
 	print command
