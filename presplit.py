@@ -1,9 +1,9 @@
 #!/usr/bin/python
 from itertools import cycle
 
-# minimum and maximum shard keys, for hashed keys this is +/- 2**64-1
-minid   = -2**64-1 
-maxid   = 2**64-1
+# minimum and maximum shard keys, for hashed keys this is +/- 2**63
+minid   = -2**63
+maxid   = 2**63
 rangeid = abs(minid - maxid)
 
 # database naming info
