@@ -26,7 +26,7 @@ def splitchunks(n, numnodes, numchunks):
 		chunkid = chunklength * chunk_count + minid
 		chunk_count  += 1
 		current_node  = nodepool.next()
-		yield 'db.adminCommand( {{ split: "{1}.{2}", middle: {{ {3} : {4} }} }} )'.format(db, collection, shard_key, str(chunkid))
+		yield 'db.adminCommand( {{ split: "{0}.{1}", middle: {{ {2} : {3} }} }} )'.format(db, collection, shard_key, str(chunkid))
 
 # splitchunks() returns an iterable list of commands, so we need to print them
 for command in splitchunks(rangeid, nodes, splits):
