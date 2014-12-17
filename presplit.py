@@ -11,12 +11,14 @@ db         = "tcga_segmentation"
 collection = "tcga_segmentation_results"
 shard_key  = "uuid"
 
-# number of nodes in sharded cluster
-nodes   = 8
+# node information
+shards      = 10
+shardprefix = "shard"
 
 # number of total splits desired
-splits = 32000
+splits = 30000
 
+# function to generate mongo db commands
 def splitchunks(n, numnodes, numchunks):
 	chunklength      = n/numchunks
 	chunk_count      = 1
@@ -25,9 +27,9 @@ def splitchunks(n, numnodes, numchunks):
 	while chunk_count < numchunks:
 		chunkid = chunklength * chunk_count + minid
 		chunk_count  += 1
-		current_node  = nodepool.next()
+		current_node  = str(nodepool.next()).zfill(4) # mongo shard notation is shard0000, shard0001, etc. so fill leading zeroes
 		yield 'db.adminCommand( {{ split: "{0}.{1}", middle: {{ {2} : NumberLong("{3}") }} }} ) \n' \
-		'db.runCommand( {{ moveChunk: "{0}.{1}", find: {{ {2}: "{3}" }}, to: "{4}" }} )'.format(db, collection, shard_key, str(chunkid), current_node)
+		'db.adminCommand( {{ moveChunk: "{0}.{1}", find: {{ {2}: "{3}" }}, to: "{4}{5}" }} )'.format(db, collection, shard_key, str(chunkid), nodeprefix, current_node)
 
 # splitchunks() returns an iterable list of commands, so we need to print them
 for command in splitchunks(rangeid, nodes, splits):
