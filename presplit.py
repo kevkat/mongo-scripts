@@ -11,7 +11,7 @@ db         = "tcga_segmentation"
 collection = "tcga_segmentation_results"
 shard_key  = "uuid"
 
-# node information
+# shard information
 shards      = 10
 shardprefix = "shard"
 
@@ -19,18 +19,18 @@ shardprefix = "shard"
 splits = 30000
 
 # function to generate mongo db commands
-def splitchunks(n, numnodes, numchunks):
+def splitchunks(n, numshards, numchunks):
 	chunklength      = n/numchunks
 	chunk_count      = 1
-	current_node     = 0
-	nodepool         = cycle(range(nodes))
+	current_shard     = 0
+	shardpool         = cycle(range(shards))
 	while chunk_count < numchunks:
 		chunkid = chunklength * chunk_count + minid
 		chunk_count  += 1
-		current_node  = str(nodepool.next()).zfill(4) # mongo shard notation is shard0000, shard0001, etc. so fill leading zeroes
+		current_shard  = str(shardpool.next()).zfill(4) # mongo shard notation is shard0000, shard0001, etc. so fill leading zeroes
 		yield 'db.adminCommand( {{ split: "{0}.{1}", middle: {{ {2} : NumberLong("{3}") }} }} ) \n' \
-		'db.adminCommand( {{ moveChunk: "{0}.{1}", find: {{ {2}: "{3}" }}, to: "{4}{5}" }} )'.format(db, collection, shard_key, str(chunkid), nodeprefix, current_node)
+		'db.adminCommand( {{ moveChunk: "{0}.{1}", find: {{ {2}: "{3}" }}, to: "{4}{5}" }} )'.format(db, collection, shard_key, str(chunkid), shardprefix, current_shard)
 
 # splitchunks() returns an iterable list of commands, so we need to print them
-for command in splitchunks(rangeid, nodes, splits):
+for command in splitchunks(rangeid, shards, splits):
 	print command
